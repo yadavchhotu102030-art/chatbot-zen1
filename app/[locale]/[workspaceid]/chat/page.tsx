@@ -1,28 +1,41 @@
-"use client"
+"use client";
 
-import { ChatHelp } from "@/components/chat/chat-help"
-import { useChatHandler } from "@/components/chat/chat-hooks/use-chat-handler"
-import { ChatInput } from "@/components/chat/chat-input"
-import { ChatSettings } from "@/components/chat/chat-settings"
-import { ChatUI } from "@/components/chat/chat-ui"
-import { QuickSettings } from "@/components/chat/quick-settings"
-import { Brand } from "@/components/ui/brand"
-import { ChatbotUIContext } from "@/context/context"
-import useHotkey from "@/lib/hooks/use-hotkey"
-import { useTheme } from "next-themes"
-import { useContext } from "react"
+import { ChatHelp } from "@/components/chat/chat-help";
+import { useChatHandler } from "@/components/chat/chat-hooks/use-chat-handler";
+import { ChatInput } from "@/components/chat/chat-input";
+import { ChatSettings } from "@/components/chat/chat-settings";
+import { ChatUI } from "@/components/chat/chat-ui";
+import { QuickSettings } from "@/components/chat/quick-settings";
+import { Brand } from "@/components/ui/brand";
+import { ChatbotUIContext } from "@/context/context";
+import useHotkey from "@/lib/hooks/use-hotkey";
+import { useTheme } from "next-themes";
+import { useContext, useEffect } from "react";
 
+// ✅ Guest-mode fallback
 export default function ChatPage() {
-  useHotkey("o", () => handleNewChat())
-  useHotkey("l", () => {
-    handleFocusChatInput()
-  })
+  const { chatMessages, setUser, setWorkspace } = useContext(ChatbotUIContext);
+  const { handleNewChat, handleFocusChatInput } = useChatHandler();
+  const { theme } = useTheme();
 
-  const { chatMessages } = useContext(ChatbotUIContext)
+  // 👇 Inject fake "guest" user/workspace to stop app from waiting
+  useEffect(() => {
+    setUser?.({
+      id: "guest",
+      email: "guest@demo.com",
+      name: "Guest",
+    });
 
-  const { handleNewChat, handleFocusChatInput } = useChatHandler()
+    setWorkspace?.({
+      id: "guest-workspace",
+      name: "Guest Workspace",
+      is_home: true,
+      user_id: "guest",
+    });
+  }, [setUser, setWorkspace]);
 
-  const { theme } = useTheme()
+  useHotkey("o", () => handleNewChat());
+  useHotkey("l", () => handleFocusChatInput());
 
   return (
     <>
@@ -54,5 +67,5 @@ export default function ChatPage() {
         <ChatUI />
       )}
     </>
-  )
+  );
 }
